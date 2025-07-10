@@ -366,6 +366,6 @@ load_dotenv()
 my_secret = os.getenv("DISCORD_TOKEN")
 
 def run():
-    bot.run(my_secret)
+    bot.run(my_secret,log_handler=DiscordWebHookHandler)
 
 run()
