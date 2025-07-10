@@ -1,4 +1,5 @@
 import os
+import requests
 from datetime import timezone, timedelta,datetime
 import discord
 from discord.ext import commands
@@ -32,6 +33,36 @@ def create_log_embed(title, color, fields: list[tuple], icon_url: str = None):
         embed.set_thumbnail(url=icon_url)
     return embed
 
+def notify_bot_started():
+    webhook_url = os.getenv("DISCORD_WEBHOOK")
+    if not webhook_url:
+        print("環境変数 DISCORD_WEBHOOK が設定されていません。")
+        return
+
+    jst = timezone(timedelta(hours=9))
+    now_jst = datetime.now(jst)
+    time_str = now_jst.strftime("%Y-%m-%d %H:%M:%S JST")
+
+    embed = {
+        "title": "bot started",
+        "description": f"起動時刻: {time_str}",
+        "color": 0xFFFF00
+    }
+
+    payload = {
+        "embeds": [embed]
+    }
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(webhook_url, json=payload, headers=headers)
+
+    if response.status_code == 204:
+        print("通知を正常に送信しました。")
+    else:
+        print(f"送信失敗: {response.status_code}, {response.text}")
 
 class CustomHelpCommand(commands.MinimalHelpCommand):
     def __init__(self):
@@ -101,6 +132,7 @@ async def load_extensions():
 async def on_ready():
     print(f"Logged into {bot.user.name}.")
     await load_extensions()
+    notify_bot_started()
     await bot.tree.sync()
 
 @bot.event
