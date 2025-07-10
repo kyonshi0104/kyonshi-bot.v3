@@ -228,7 +228,6 @@ class DebugCommands(commands.Cog):
             await ctx.send("BOT所有者用のコマンドです。")
             return
         await ctx.send("再起動処理が実行されます。")
-        subprocess.run("sudo systemctl restart kyonshi-bot", shell=True)
         sys.exit(0)
 
 class tester(commands.Cog):
