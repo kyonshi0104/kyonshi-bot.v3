@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import json
+import subprocess
 
 with open("data/owner.json", "r") as f:
     owners = json.load(f)
@@ -220,6 +221,13 @@ class DebugCommands(commands.Cog):
             await ctx.send("BOT所有者用のコマンドです。")
             return
         await ctx.send("開発中です")
+
+    @debug.command()
+    async def reload(self, ctx):
+        if ctx.author.id not in self.owners:
+            await ctx.send("BOT所有者用のコマンドです。")
+            return
+        subprocess.run("sudo systemctl restart kyonshi-bot")
 
 class tester(commands.Cog):
     def __init__(self, bot):
