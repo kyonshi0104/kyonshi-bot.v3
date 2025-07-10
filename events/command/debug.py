@@ -202,7 +202,7 @@ class DebugCommands(commands.Cog):
             return
 
         try:
-            guilds = self.bot.builds
+            guilds = self.bot.guilds
             user = self.bot.fetch_user(user_id)
 
             for server in guilds:
