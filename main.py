@@ -21,7 +21,7 @@ class WebhookLogger:
         if message.strip():
             self.original_stdout.write(message)
             self.original_stdout.flush()
-            payload = {"content": message}
+            payload = {"content": f"```js\n{message}```"}
             try:
                 requests.post(self.webhook_url, json=payload)
             except Exception:
@@ -78,12 +78,7 @@ def notify_bot_started():
         "Content-Type": "application/json"
     }
 
-    response = requests.post(webhook_url, json=payload, headers=headers)
-
-    if response.status_code == 204:
-        print("通知を正常に送信しました。")
-    else:
-        print(f"送信失敗: {response.status_code}, {response.text}")
+    requests.post(webhook_url, json=payload, headers=headers)
 
 class CustomHelpCommand(commands.MinimalHelpCommand):
     def __init__(self):
