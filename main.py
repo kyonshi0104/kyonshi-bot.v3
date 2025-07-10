@@ -1,4 +1,5 @@
 import os
+import sys
 import requests
 from datetime import timezone, timedelta,datetime
 import discord
@@ -10,6 +11,26 @@ import logs
 load_dotenv()
 
 my_secret = os.getenv("DISCORD_TOKEN")
+
+class WebhookLogger:
+    def __init__(self, webhook_url, original_stdout):
+        self.webhook_url = webhook_url
+        self.original_stdout = original_stdout
+
+    def write(self, message):
+        if message.strip():
+            self.original_stdout.write(message)
+            self.original_stdout.flush()
+            payload = {"content": message}
+            try:
+                requests.post(self.webhook_url, json=payload)
+            except Exception:
+                pass
+
+    def flush(self):
+        self.original_stdout.flush()
+
+sys.stdout = WebhookLogger(os.getenv("DISCORD_LOG_WEBHOOK"), sys.__stdout__)
 
 COLORS = {
     "join": Colour.blue(),
@@ -34,7 +55,7 @@ def create_log_embed(title, color, fields: list[tuple], icon_url: str = None):
     return embed
 
 def notify_bot_started():
-    webhook_url = os.getenv("DISCORD_WEBHOOK")
+    webhook_url = os.getenv("DISCORD_STARTUP_WEBHOOK")
     if not webhook_url:
         print("環境変数 DISCORD_WEBHOOK が設定されていません。")
         return
