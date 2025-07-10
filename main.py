@@ -338,7 +338,7 @@ class DiscordWebHookHandler(logging.Handler):
             raise ValueError("DISCORD_WEBHOOK is not set")
         self.console = logging.StreamHandler()
         formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
-        self.setFormatter(formatter)  # ⭐ これが必要
+        self.setFormatter(formatter)
         self.console.setFormatter(formatter)
 
     def emit(self, record):
