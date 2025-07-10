@@ -1,15 +1,14 @@
 import os
-import json
-import logging
-import urllib.request
 from datetime import timezone, timedelta,datetime
 import discord
 from discord.ext import commands
 from discord import app_commands, AuditLogAction, Colour
-
+from dotenv import load_dotenv
 import logs
 
-intents = discord.Intents.all()
+load_dotenv()
+
+my_secret = os.getenv("DISCORD_TOKEN")
 
 COLORS = {
     "join": Colour.blue(),
@@ -86,6 +85,7 @@ class CustomHelpCommand(commands.MinimalHelpCommand):
         channel = self.get_destination()
         await channel.send(embed=embed)
 
+intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix="ky!",intents=intents)
 tree = app_commands.CommandTree(client)
@@ -99,11 +99,10 @@ async def load_extensions():
 
 @bot.event
 async def on_ready():
-    print(f"Logged into {bot.user.id}.")
+    print(f"Logged into {bot.user.name}.")
     await load_extensions()
     await bot.tree.sync()
 
-# Member Join / Leave
 @bot.event
 async def on_member_join(member):
     now = datetime.now(timezone(timedelta(hours=9)))
@@ -318,11 +317,6 @@ async def on_command_error(ctx, error):
     else:
         await ctx.send(embed=discord.Embed(title="error",description=error,color=discord.Color.red()))
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
-my_secret = os.getenv("DISCORD_TOKEN")
 
 def run():
     bot.run(my_secret)
