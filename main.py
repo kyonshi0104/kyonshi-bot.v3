@@ -318,52 +318,6 @@ async def on_command_error(ctx, error):
     else:
         await ctx.send(embed=discord.Embed(title="error",description=error,color=discord.Color.red()))
 
-
-class Client(discord.Client):
-    def __init__(self):
-        super().__init__(intents=discord.Intents.all())
-        self.tree = discord.CommandTree(client=self)
-
-    async def setup_hook(self) -> None:
-        await self.tree.sync()
-
-class DiscordWebHookHandler(logging.Handler):
-    webhook: str
-    console: logging.StreamHandler
-
-    def __init__(self):
-        super().__init__()
-        self.webhook = os.getenv('DISCORD_WEBHOOK')
-        if not self.webhook:
-            raise ValueError("DISCORD_WEBHOOK is not set")
-        self.console = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
-        self.setFormatter(formatter)
-        self.console.setFormatter(formatter)
-
-    def emit(self, record):
-        try:
-            self.console.emit(record)
-            urllib.request.urlopen(
-            urllib.request.Request(
-                self.webhook,
-                data=json.dumps({
-                    "content":
-                    "```js\n" + self.format(record) + "\n```"
-                }).encode(),
-                headers={
-                    "Content-Type": "application/json",
-                    "User-Agent": "DiscordBot (private use) Python-urllib/3.10",
-                },
-            )).close()
-        except Exception:
-            self.handleError(record)
-
-async def log(content):
-    print(content)
-    await discord.Webhook.from_url(os.environ['DISCORD_WEBHOOK'],
-                                    client=client).send(content)
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -371,6 +325,6 @@ load_dotenv()
 my_secret = os.getenv("DISCORD_TOKEN")
 
 def run():
-    bot.run(my_secret,log_handler=DiscordWebHookHandler)
+    bot.run(my_secret)
 
 run()
