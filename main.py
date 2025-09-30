@@ -159,7 +159,7 @@ async def on_message(message):
 
     if re.match(r'^\d+d\d+$', content):
         num, sides = map(int, content.split('d'))
-        result = [random.randint(1, sides) for _ in range(num)]
+        result = [str(random.randint(1, sides)) for _ in range(num)]
         message.reply(embed=discord.Embed(title=content),description=", ".join(result),color=discord.Colour.gold)
 
 @bot.event
