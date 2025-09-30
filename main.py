@@ -8,8 +8,15 @@ from discord import app_commands, AuditLogAction, Colour
 from dotenv import load_dotenv
 import logs
 import re,random
+import json
 
 load_dotenv()
+
+with open("data/owner.json", "r") as f:
+    owners = json.load(f)
+
+with open("data/reply_templete.json","r") as f:
+    reply_templates = json.load(f)
 
 my_secret = os.getenv("DISCORD_TOKEN")
 
@@ -154,13 +161,28 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
+    if message.author.bot:
+        return
 
     content = message.content
+
+    for reply, triggers in reply_templates.items():
+        if any(trigger in content for trigger in triggers):
+            await message.reply(reply)
+            return
+
+    if content == f"<@{str(bot.user.id)}>":
+        if message.author.id in owners:
+            await message.reply("どうされましたか")
+        else:
+            await message.reply("なんすか")
+        return
 
     if re.match(r'^\d+d\d+$', content):
         num, sides = map(int, content.split('d'))
         result = [str(random.randint(1, sides)) for _ in range(num)]
         await message.reply(embed=discord.Embed(title=content,description=", ".join(result),color=Colour.green()))
+        return
 
     await bot.process_commands(message)
 
