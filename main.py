@@ -7,6 +7,7 @@ from discord.ext import commands
 from discord import app_commands, AuditLogAction, Colour
 from dotenv import load_dotenv
 import logs
+import re,random
 
 load_dotenv()
 
@@ -150,6 +151,14 @@ async def on_ready():
     await load_extensions()
     notify_bot_started()
     await bot.tree.sync()
+
+@bot.event
+async def on_message(message):
+
+    if re.match(r'^\d+d\d+$', message):
+        num, sides = map(int, message.split('d'))
+        result = [random.randint(1, sides) for _ in range(num)]
+        message.reply(embed=discord.Embed(title=message),description=", ".join(result),color=discord.Colour.gold)
 
 @bot.event
 async def on_member_join(member):
