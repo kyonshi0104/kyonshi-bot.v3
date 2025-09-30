@@ -162,6 +162,8 @@ async def on_message(message):
         result = [str(random.randint(1, sides)) for _ in range(num)]
         await message.reply(embed=discord.Embed(title=content,description=", ".join(result),color=Colour.green()))
 
+    await bot.process_commands(message)
+
 @bot.event
 async def on_member_join(member):
     now = datetime.now(timezone(timedelta(hours=9)))
