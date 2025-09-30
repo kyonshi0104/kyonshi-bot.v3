@@ -167,7 +167,7 @@ async def on_message(message):
     content = message.content
 
     for reply, triggers in reply_templates.items():
-        if any(trigger in content for trigger in triggers):
+        if content in triggers:
             await message.reply(reply)
             return
 
