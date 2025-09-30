@@ -168,7 +168,7 @@ async def on_message(message):
 
     for reply, triggers in reply_templates.items():
         if content in triggers:
-            await message.reply(reply)
+            await message.channel.send(reply)
             return
 
     if content == f"<@{str(bot.user.id)}>":
