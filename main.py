@@ -160,7 +160,7 @@ async def on_message(message):
     if re.match(r'^\d+d\d+$', content):
         num, sides = map(int, content.split('d'))
         result = [str(random.randint(1, sides)) for _ in range(num)]
-        await message.reply(embed=discord.Embed(title=content,description=", ".join(result),color=discord.Colour.gold))
+        await message.reply(embed=discord.Embed(title=content,description=", ".join(result),color=Colour.green()))
 
 @bot.event
 async def on_member_join(member):
