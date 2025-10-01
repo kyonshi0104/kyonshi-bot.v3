@@ -33,10 +33,6 @@ class GeneralCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-class Help(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
     @app_commands.command(name="help", description="コマンド一覧を表示します")
     async def help(self, interaction: discord.Interaction):
         embed = discord.Embed(title="ヘルプ", description="利用可能なコマンド一覧", color=discord.Color.blue())
