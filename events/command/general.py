@@ -125,6 +125,12 @@ class GeneralCommands(commands.Cog):
 
         await interaction.response.send_message(embed=embed, file=file)
 
+    @app_commands.command(name="say",description="任意の文字列をメッセージとして送信します。")
+    @app_commands.describe(message="喋らせたいメッセージ")
+    async def say(self, interaction:discord.Interaction, message:str):
+        await interaction.channel.send(f"{message}\n-# saycommandによるメッセージ")
+        await interaction.response.send_message("送信しました。",ephemeral=True)
+
 class SystemCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
