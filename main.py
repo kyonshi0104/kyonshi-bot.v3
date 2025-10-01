@@ -20,6 +20,12 @@ load_dotenv()
 with open("data/owner.json", "r") as f:
     owners = json.load(f)
 
+with open("data/blockuser.json","r") as f:
+    blockusers = json.load(f)
+
+with open("data/blockserver.json","r") as f:
+    blockservers = json.load(f)
+
 with open("data/reply_templete.json","r") as f:
     reply_templates = json.load(f)
 
@@ -167,6 +173,9 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     if message.author.bot:
+        return
+
+    if message.author.id in blockusers:
         return
 
     content = message.content
@@ -414,6 +423,13 @@ async def on_command_error(ctx, error):
     else:
         await ctx.send(embed=discord.Embed(title="error",description=error,color=discord.Color.red()))
 
+#
+
+@bot.event
+async def on_guild_join(guild:discord.Guild):
+    print(f"Blocked guild joined: {guild.name} ({guild.id}) — leaving.", flush=True)
+    if guild.id in blockservers:
+        await guild.leave()
 
 def run():
     bot.run(my_secret)
