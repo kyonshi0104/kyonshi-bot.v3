@@ -158,28 +158,27 @@ class DebugCommands(commands.Cog):
         description = "\n".join(f"{g.name} ({g.id})" for g in guilds)
         await ctx.send(description)
 
-@debug.command()
-async def create_instant_link(self, ctx, guild_id: int):
-    guild = self.bot.get_guild(guild_id)
-    if guild is None:
-        await ctx.send("指定されたサーバーが見つかりません。")
-        return
+    @debug.command()
+    async def create_instant_link(self, ctx, guild_id: int):
+        guild = self.bot.get_guild(guild_id)
+        if guild is None:
+            await ctx.send("指定されたサーバーが見つかりません。")
+            return
 
-    # 招待リンクを作成できるテキストチャンネルを探す
-    for channel in guild.text_channels:
-        if channel.permissions_for(guild.me).create_instant_invite:
-            try:
-                invite = await channel.create_invite(max_age=300, max_uses=1, unique=True)
-                await ctx.send(f"招待リンクを作成しました: {invite.url}")
-                return
-            except Forbidden:
-                await ctx.send("招待リンクを作成する権限がありません。")
-                return
-            except HTTPException:
-                await ctx.send("招待リンクの作成中にエラーが発生しました。")
-                return
+        for channel in guild.text_channels:
+            if channel.permissions_for(guild.me).create_instant_invite:
+                try:
+                    invite = await channel.create_invite(max_age=300, max_uses=1, unique=True)
+                    await ctx.send(f"招待リンクを作成しました: {invite.url}")
+                    return
+                except Forbidden:
+                    await ctx.send("招待リンクを作成する権限がありません。")
+                    return
+                except HTTPException:
+                    await ctx.send("招待リンクの作成中にエラーが発生しました。")
+                    return
 
-    await ctx.send("招待リンクを作成できるチャンネルが見つかりませんでした。")
+        await ctx.send("招待リンクを作成できるチャンネルが見つかりませんでした。")
 
     @debug.command()
     async def developer_remove(self, ctx, user_id: int):
