@@ -9,7 +9,7 @@ import qrcode
 from PIL import Image
 import io
 
-def resize_contain_with_padding(self, img: Image.Image, target_size: tuple, bg_color="white") -> Image.Image:
+def resize_contain_with_padding(img: Image.Image, target_size: tuple, bg_color="white") -> Image.Image:
     img_copy = img.copy()
     img_copy.thumbnail(target_size, Image.LANCZOS)
     background = Image.new("RGBA", target_size, bg_color)
