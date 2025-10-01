@@ -171,13 +171,15 @@ async def on_message(message):
 
     content = message.content
 
+    recent_messages = [msg async for msg in message.channel.history(limit=5)]
+
     for reply, triggers in reply_templates.items():
         if content in triggers:
             if message.reference is not None:
                 return
 
-            async for past_message in message.channel.history(limit=4):
-                if past_message.author == bot.user and past_message.content == content:
+            for m in recent_messages:
+                if m.author == bot.user and m.content in triggers:
                     return
 
             await message.channel.send(reply)
