@@ -1,14 +1,19 @@
 import os
 import sys
-import requests
-from datetime import timezone, timedelta,datetime
-import discord
-from discord.ext import commands
-from discord import app_commands, AuditLogAction, Colour
-from dotenv import load_dotenv
-import logs
-import re,random
+import re
+import random
 import json
+from datetime import datetime, timedelta, timezone
+
+import requests
+import qrcode
+from dotenv import load_dotenv
+
+import discord
+from discord import app_commands, AuditLogAction, Colour
+from discord.ext import commands
+
+import logs
 
 load_dotenv()
 

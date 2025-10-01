@@ -1,10 +1,24 @@
 from discord.ext import commands
-from discord import app_commands, Color, Embed, Member
+from discord import app_commands, Color, Embed, Member, File
 import discord
 import json
 import requests
 import datetime
 import zoneinfo
+import qrcode
+from PIL import Image
+import io
+
+def resize_contain_with_padding(self, img: Image.Image, target_size: tuple, bg_color="white") -> Image.Image:
+    img_copy = img.copy()
+    img_copy.thumbnail(target_size, Image.LANCZOS)
+    background = Image.new("RGBA", target_size, bg_color)
+    offset = (
+        (target_size[0] - img_copy.width) // 2,
+        (target_size[1] - img_copy.height) // 2
+    )
+    background.paste(img_copy, offset)
+    return background
 
 with open("data/blockuser.json") as f:
     blackusers = json.load(f)
@@ -18,6 +32,28 @@ with open("data/developer.json") as f:
 class GeneralCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+class Help(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @app_commands.command(name="help", description="コマンド一覧を表示します")
+    async def help(self, interaction: discord.Interaction):
+        embed = discord.Embed(title="ヘルプ", description="利用可能なコマンド一覧", color=discord.Color.blue())
+
+        text_commands = []
+        for cmd in self.bot.commands:
+            if not cmd.hidden:
+                text_commands.append(f"`{cmd.name}` - {cmd.help or '説明なし'}")
+        embed.add_field(name="テキストコマンド (!)", value="\n".join(text_commands) or "なし", inline=False)
+
+        slash_commands = []
+        for cmd in self.bot.tree.get_commands():
+            if isinstance(cmd, app_commands.Command):
+                slash_commands.append(f"`/{cmd.name}` - {cmd.description or '説明なし'}")
+        embed.add_field(name="スラッシュコマンド (/)", value="\n".join(slash_commands) or "なし", inline=False)
+
+        await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name="ping", description="BOTのPing値を返します")
     async def ping(self, interaction: discord.Interaction):
@@ -54,6 +90,44 @@ class GeneralCommands(commands.Cog):
         response = requests.post("https://api2-airest.onrender.com/chat", headers=headers, json=payload)
         await interaction.followup.send(response.json()["message"]["content"])
 
+    @app_commands.command(name="qrcode",description="任意のQRコードを生成します")
+    @app_commands.describe(data="QRコードに埋め込む文字列",
+        fill_color="QRコードの色（デフォルト：#000000）",
+        background_color="背景色（デフォルト：#ffffff）",
+        background_image="背景画像（アップロード）")
+    async def qrcode(
+        self,
+        interaction: discord.Interaction,
+        data: str,
+        fill_color: str = "#000000",
+        background_color: str = "#ffffff",
+        background_image: discord.Attachment = None
+    ):
+        qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
+        qr.add_data(data)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color=fill_color, back_color="transparent").convert("RGBA")
+
+        if background_image:
+            image_bytes = await background_image.read()
+            bg = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
+            bg = resize_contain_with_padding(bg, qr_img.size, background_color)
+        else:
+            bg = Image.new("RGBA", qr_img.size, background_color)
+
+        final_img = Image.alpha_composite(bg, qr_img)
+
+        buffer = io.BytesIO()
+        final_img.save(buffer, format="PNG")
+        buffer.seek(0)
+        file = File(buffer, filename="qrcode.png")
+
+        # 埋め込みメッセージ
+        embed = Embed(title="QRコード", description=f"```{data}```", color=0x2ecc71)
+        embed.set_image(url="attachment://qrcode.png")
+        embed.set_footer(text="made by kyonshi-bot", icon_url="https://kyonshi.com/res/kyonshi.png")
+
+        await interaction.response.send_message(embed=embed, file=file)
 
 class SystemCommands(commands.Cog):
     def __init__(self, bot):
