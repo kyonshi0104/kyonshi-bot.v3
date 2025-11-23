@@ -77,7 +77,7 @@ class GeneralCommands(commands.Cog):
     async def server(self, interaction: discord.Interaction):
         await interaction.response.send_message(f"今は {len(self.bot.guilds)} サーバーに参加してるよ")
 
-    @app_commands.command(name="airest", description="AIにメッセージを送信して応答を受け取ります")
+    """@app_commands.command(name="airest", description="AIにメッセージを送信して応答を受け取ります")
     @app_commands.describe(message="AIに送るメッセージ")
     async def airest(self, interaction: discord.Interaction, message: str):
         await interaction.response.defer()
@@ -85,7 +85,7 @@ class GeneralCommands(commands.Cog):
         payload = {"model": "airest-2.5-turbo", "message": message}
         response = requests.post("https://api2-airest.onrender.com/chat", headers=headers, json=payload)
         await interaction.followup.send(response.json()["message"]["content"])
-
+"""
     @app_commands.command(name="qrcode",description="任意のQRコードを生成します")
     @app_commands.describe(data="QRコードに埋め込む文字列",
         fill_color="QRコードの色（デフォルト：#000000）",
