@@ -163,6 +163,113 @@ async def load_extensions():
         if filename.endswith('.py'):
             await bot.load_extension(f'events.command.{filename[:-3]}')
 
+def stringify_interpreted(interpreted):
+    """
+    [[3,4],1] → "[3,4] + 1"
+    [[3,4],[4,5],-2] → "[3,4] + [4,5] - 2"
+    """
+    parts = []
+    for x in interpreted:
+        if isinstance(x, list):
+            parts.append(str(x))
+        else:
+            if x >= 0:
+                parts.append(f"+ {x}")
+            else:
+                parts.append(f"- {abs(x)}")
+
+    expr = " ".join(parts).lstrip("+ ").strip()
+    return expr
+
+def dice(s:str):
+    if s.startswith("CCB <="):
+        num = int(s.split(" ")[2])
+        result = random.randint(1,100)
+
+        if result <= num:
+            if result <= 5:
+                message = "決定的成功"
+            elif result <= 10:
+                message = "スペシャル"
+            else:
+                message = "成功"
+        else:
+            if result >= 95:
+                message = "致命的失敗"
+            else:
+                message = "失敗"
+
+        message = f"{result} > *{message}*"
+
+        return message
+
+    elif s.startswith("CC <="):
+        num = int(s.split(" ")[2])
+        result = random.randint(1,100)
+
+        if result <= num:
+            if result == 1:
+                message = "決定的成功"
+            else:
+                message = "成功"
+        else:
+            if result == 100:
+                message = "致命的失敗"
+            else:
+                message = "失敗"
+
+        message = f"{result} > *{message}*"
+
+        return message
+
+
+    elif re.match(r"^S\d+[Dd]\d+$",s):
+        num, sides = map(int, s.removeprefix("S").split('d'))
+        result = [str(random.randint(1, sides)) for _ in range(num)]
+        message = f"s{result}"
+
+        return message
+
+    elif s.startswith("RESB("):
+        basenum = int(s.split("-")[0].removeprefix("RESB(")) - int(s.split("-")[1].removesuffix(")"))
+        result_num = 50 + (basenum * 5)
+        results = random.randint(1,100)
+
+        if results > result_num:
+            message = f" {results} > {result_num} ＞ 対抗成功"
+        else:
+            message = f" {results} =< {result_num} ＞ 対抗失敗"
+
+        return message
+
+    elif re.match(r"^\d+d\d+",s):
+        tokens = re.findall(r'[+-]?\d+d\d+|[+-]?\d+', s)
+
+        interpreted = []
+        total = 0
+
+        for token in tokens:
+            sign = -1 if token.startswith('-') else 1
+            token = token.lstrip('+-')
+
+            if 'd' in token:
+                num, sides = map(int, token.split('d'))
+                rolls = [random.randint(1, sides) for _ in range(num)]
+                interpreted.append(rolls if sign > 0 else [-r for r in rolls])
+                total += sum(rolls) * sign
+            else:
+                val = int(token) * sign
+                interpreted.append(val)
+                total += val
+
+        message = f"{stringify_interpreted(interpreted)} > {total}"
+
+        return message
+
+    else:
+        return None
+
+
 @bot.event
 async def on_ready():
     print(f"Logged into {bot.user.name}.")
@@ -201,11 +308,10 @@ async def on_message(message):
             await message.reply("なんすか")
         return
 
-    if re.match(r'^\d+d\d+$', content):
-        num, sides = map(int, content.split('d'))
-        result = [str(random.randint(1, sides)) for _ in range(num)]
-        await message.reply(embed=discord.Embed(title=content,description=", ".join(result),color=Colour.green()))
-        return
+    s = dice(content)
+
+    if s:
+        await message.channel.send(embed=discord.Embed(title=content,description=s))
 
     await bot.process_commands(message)
 
