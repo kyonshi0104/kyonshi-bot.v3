@@ -128,7 +128,7 @@ class GeneralCommands(commands.Cog):
     @app_commands.command(name="say",description="任意の文字列をメッセージとして送信します。")
     @app_commands.describe(message="喋らせたいメッセージ")
     async def say(self, interaction:discord.Interaction, message:str):
-        await interaction.channel.send(f"{message}\n-# saycommandによるメッセージ",allowed_mentions=False)
+        await interaction.channel.send(f"{message}\n-# saycommandによるメッセージ",allowed_mentions=discord.AllowedMentions(users=True,roles=False,everyone=False,replied_user=False))
         await interaction.response.send_message("送信しました。",ephemeral=True)
 
 class SystemCommands(commands.Cog):
