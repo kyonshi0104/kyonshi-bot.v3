@@ -269,6 +269,31 @@ def dice(s:str):
     else:
         return None
 
+def load_blocklist(path: str) -> list[int]:
+    if not os.path.exists(path):
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        try:
+            data = json.load(f)
+            return list(map(int, data))
+        except Exception:
+            return []
+
+async def global_block_check(ctx: commands.Context) -> bool:
+    user_blocks = load_blocklist("data/blockuser.json")
+    server_blocks = load_blocklist("data/blockserver.json")
+
+    if ctx.author.id in user_blocks or (ctx.guild and ctx.guild.id in server_blocks):
+        # False を返す代わりに例外を投げる
+        raise commands.CheckFailure("あなたはこのBOTを使用できません。")
+    return True
+
+bot.add_check(global_block_check)
+
+@bot.event
+async def on_application_command_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.respond(str(error))
 
 @bot.event
 async def on_ready():
