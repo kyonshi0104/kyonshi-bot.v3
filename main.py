@@ -279,21 +279,25 @@ def load_blocklist(path: str) -> list[int]:
         except Exception:
             return []
 
-async def global_block_check(ctx: commands.Context) -> bool:
+async def global_block_check(interaction: discord.Interaction) -> bool:
     user_blocks = load_blocklist("data/blockuser.json")
     server_blocks = load_blocklist("data/blockserver.json")
 
-    if ctx.author.id in user_blocks or (ctx.guild and ctx.guild.id in server_blocks):
-        # False を返す代わりに例外を投げる
-        raise commands.CheckFailure("あなたはこのBOTを使用できません。")
+    if interaction.user.id in user_blocks:
+        return False
+    if interaction.guild and interaction.guild.id in server_blocks:
+        return False
     return True
 
-bot.add_check(global_block_check)
-
 @bot.event
-async def on_application_command_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.respond(str(error))
+async def on_interaction(interaction: discord.Interaction):
+    if interaction.type == discord.InteractionType.application_command:
+        ok = await global_block_check(interaction)
+        if not ok:
+            return
+        await bot.process_application_commands(interaction)
+    else:
+        await bot.process_application_commands(interaction)
 
 @bot.event
 async def on_ready():
